@@ -1,0 +1,15 @@
+{
+  "name": "wasm-parser",
+  "type": "module",
+  "version": "0.1.0",
+  "files": [
+    "wasm_parser_bg.wasm",
+    "wasm_parser.js",
+    "wasm_parser.d.ts"
+  ],
+  "main": "wasm_parser.js",
+  "types": "wasm_parser.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}

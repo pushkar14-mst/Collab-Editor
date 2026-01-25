@@ -1,15 +1,10 @@
 "use client";
 
-import Toolbar from "../components/toolbar";
-import CodeEditor from "../components/code-editor";
+import { nanoid } from "nanoid";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
-  return (
-    <div className="flex h-screen bg-zinc-50 font-sans dark:bg-gray-950 flex-col">
-      <Toolbar />
-      <main className="flex-1 w-full">
-        <CodeEditor />
-      </main>
-    </div>
-  );
+  const roomId = nanoid(10);
+  const router = useRouter();
+  return router.push(`/${roomId}`);
 }

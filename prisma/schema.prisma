@@ -1,0 +1,58 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Room - represents a collaborative session
+model Room {
+  id        String   @id @default(uuid())
+  name      String?
+  code      String   @db.Text // Store the actual code content
+  language  String   @default("javascript")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  snapshots CodeSnapshot[]
+
+  @@index([createdAt])
+}
+
+// CodeSnapshot - version history
+model CodeSnapshot {
+  id        String   @id @default(uuid())
+  roomId    String
+  code      String   @db.Text
+  userId    String
+  userName  String
+  timestamp DateTime @default(now())
+
+  // Relations
+  room Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  @@index([roomId, timestamp])
+}
+
+// User cursor positions (optional - for showing who's in the room)
+model ActiveUser {
+  id         String   @id @default(uuid())
+  roomId     String
+  userId     String   @unique
+  userName   String
+  lastSeen   DateTime @default(now())
+  cursorLine Int?
+  cursorCol  Int?
+
+  @@index([roomId, lastSeen])
+}

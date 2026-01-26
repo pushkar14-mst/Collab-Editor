@@ -1,15 +1,15 @@
 import { prisma } from "@/src/lib/prisma";
-import { NextRequest, NextResponse } from "next/server";
+import { withParams } from "@/src/lib/route-handler";
+import { NextResponse } from "next/server";
 import { z } from "zod";
 
 const schema = z.object({
   code: z.string(),
   language: z.string(),
 });
-export async function PUT(request: NextRequest) {
+export const PUT = withParams(async (request, segment) => {
   try {
-    const searchParams = request.nextUrl.searchParams;
-    const roomId = searchParams.get("roomid");
+    const roomId = segment.params?.roomid;
     const body = await request.json();
     if (!body) return NextResponse.error();
     const { code, language } = z.parse(schema, body);
@@ -35,4 +35,4 @@ export async function PUT(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});

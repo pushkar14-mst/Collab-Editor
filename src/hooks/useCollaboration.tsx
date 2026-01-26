@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { supabase } from "../lib/supabase";
 import { nanoid } from "nanoid";
@@ -12,18 +12,66 @@ import {
   updateCursor,
   removeCursor,
   setConnected,
+  setLanguage,
 } from "../store/editor-slice";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 
 export function useCollaboration(roomIdFromUrl?: string) {
   const dispatch = useDispatch();
-  const { code, userId, roomId, userName } = useSelector(
+  const { code, userId, roomId, userName, language } = useSelector(
     (state: RootState) => state.editor
   );
 
   const channelRef = useRef<RealtimeChannel | null>(null);
   const isLocalChange = useRef(false);
+  const saveTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const loadRoom = useCallback(
+    async (roomId: string) => {
+      try {
+        const response = await fetch(`/api/rooms/${roomId}`);
+        if (response.ok) {
+          const room = await response.json();
+          dispatch(setCode(room.code));
+          dispatch(setLanguage(room.language));
+        }
+      } catch (error) {
+        console.error("Failed to load room:", error);
+      }
+    },
+    [dispatch]
+  );
 
+  // Save code to database (debounced)
+  const saveCode = useCallback(
+    async (roomId: string, code: string, language: string) => {
+      try {
+        await fetch(`/api/${roomId}/update`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ code, language }),
+        });
+      } catch (error) {
+        console.error("Failed to save code:", error);
+      }
+    },
+    []
+  );
+
+  // Save snapshot periodically
+  const saveSnapshot = useCallback(
+    async (roomId: string, code: string, userId: string, userName: string) => {
+      try {
+        await fetch(`/api/snapshots/${roomId}/save`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ code, userId, userName }),
+        });
+      } catch (error) {
+        console.error("Failed to save snapshot:", error);
+      }
+    },
+    []
+  );
   useEffect(() => {
     // Generate userId if doesn't exist
     if (!userId) {
@@ -33,10 +81,13 @@ export function useCollaboration(roomIdFromUrl?: string) {
     }
 
     // Set or generate roomId
-    const currentRoomId = roomIdFromUrl || roomId || nanoid(10);
+    const currentRoomId = roomIdFromUrl || roomId;
+    if (!currentRoomId) return;
+
     if (currentRoomId !== roomId) {
       dispatch(setRoomId(currentRoomId));
-      return; // Wait for roomId to be set
+      loadRoom(currentRoomId);
+      return;
     }
 
     // Create Supabase channel for this room
@@ -97,8 +148,25 @@ export function useCollaboration(roomIdFromUrl?: string) {
       }
       dispatch(setConnected(false));
     };
-  }, [userId, roomId, roomIdFromUrl, dispatch]);
+  }, [userId, roomId, roomIdFromUrl, dispatch, loadRoom]);
+  // Auto-save code to database (debounced)
+  useEffect(() => {
+    if (!roomId || !code) return;
 
+    if (saveTimerRef.current) {
+      clearTimeout(saveTimerRef.current);
+    }
+
+    saveTimerRef.current = setTimeout(() => {
+      saveCode(roomId, code, language);
+    }, 2000); // Save after 2 seconds of no changes
+
+    return () => {
+      if (saveTimerRef.current) {
+        clearTimeout(saveTimerRef.current);
+      }
+    };
+  }, [code, language, roomId, saveCode]);
   // Send code changes to other users
   const sendCodeChange = (newCode: string) => {
     if (channelRef.current && !isLocalChange.current) {
@@ -133,9 +201,14 @@ export function useCollaboration(roomIdFromUrl?: string) {
       });
     }
   };
-
+  const createSnapshot = useCallback(() => {
+    if (roomId && code && userId) {
+      saveSnapshot(roomId, code, userId, userName);
+    }
+  }, [roomId, code, userId, userName, saveSnapshot]);
   return {
     sendCodeChange,
     sendCursorUpdate,
+    createSnapshot,
   };
 }

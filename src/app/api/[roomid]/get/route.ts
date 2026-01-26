@@ -1,7 +1,8 @@
 import { prisma } from "@/src/lib/prisma";
-import { NextRequest, NextResponse } from "next/server";
+import { withParams } from "@/src/lib/route-handler";
+import { NextResponse } from "next/server";
 
-export async function GET(request: NextRequest) {
+export const GET = withParams(async (request, segment) => {
   const searchParams = request.nextUrl.searchParams;
   const roomId = searchParams.get("roomid");
 
@@ -31,4 +32,4 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});

@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../store";
 import { useState } from "react";
 import { setLanguage, setUserName } from "../store/editor-slice";
+import { useCollaboration } from "../hooks/useCollaboration";
 
 /**
  * Toolbar Component
@@ -15,7 +16,7 @@ export default function Toolbar() {
   const { language, roomId, userName, isConnected } = useSelector(
     (state: RootState) => state.editor
   );
-
+  const { createSnapshot } = useCollaboration();
   const [isEditingName, setIsEditingName] = useState(false);
   const [tempName, setTempName] = useState(userName);
 
@@ -116,6 +117,13 @@ export default function Toolbar() {
             📋 Copy Room Link
           </button>
         )}
+        <button
+          onClick={createSnapshot}
+          className="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-sm rounded flex items-center gap-1"
+          title="Save snapshot"
+        >
+          💾 Save
+        </button>
       </div>
     </div>
   );

@@ -1,12 +1,13 @@
 import { prisma } from "@/src/lib/prisma";
-import { NextRequest, NextResponse } from "next/server";
+import { withParams } from "@/src/lib/route-handler";
+import { NextResponse } from "next/server";
 import { z } from "zod";
 const schema = z.object({
   name: z.string(),
   code: z.string(),
   language: z.string(),
 });
-export async function POST(request: NextRequest) {
+export const POST = withParams(async (request, segment) => {
   try {
     const body = await request.json();
     if (!body) return NextResponse.error();
@@ -28,4 +29,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});

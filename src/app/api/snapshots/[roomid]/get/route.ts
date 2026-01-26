@@ -1,9 +1,9 @@
 import { prisma } from "@/src/lib/prisma";
+import { withParams } from "@/src/lib/route-handler";
 import { NextRequest, NextResponse } from "next/server";
 
-export async function GET(request: NextRequest) {
-  const searchParams = request.nextUrl.searchParams;
-  const roomId = searchParams.get("roomid");
+export const GET = withParams(async (request, segment) => {
+  const roomId = segment.params?.roomid;
 
   if (!roomId) {
     return NextResponse.json({ error: "Room ID required" }, { status: 400 });
@@ -24,4 +24,4 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});

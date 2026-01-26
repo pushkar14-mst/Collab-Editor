@@ -1,4 +1,5 @@
 import { prisma } from "@/src/lib/prisma";
+import { withParams } from "@/src/lib/route-handler";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -8,10 +9,9 @@ const schema = z.object({
   userName: z.string(),
 });
 
-export async function POST(request: NextRequest) {
+export const POST = withParams(async (request, segment) => {
   try {
-    const searchParams = request.nextUrl.searchParams;
-    const roomId = searchParams.get("roomid");
+    const roomId = segment.params?.roomid;
     if (!roomId) {
       return NextResponse.json({ error: "Room ID required" }, { status: 400 });
     }
@@ -43,4 +43,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});

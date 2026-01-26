@@ -3,8 +3,7 @@ import { withParams } from "@/src/lib/route-handler";
 import { NextResponse } from "next/server";
 
 export const GET = withParams(async (request, segment) => {
-  const searchParams = request.nextUrl.searchParams;
-  const roomId = searchParams.get("roomid");
+  const roomId = segment.params?.roomid;
 
   if (!roomId) {
     return NextResponse.json({ error: "Room ID required" }, { status: 400 });

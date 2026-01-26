@@ -28,7 +28,7 @@ export function useCollaboration(roomIdFromUrl?: string) {
   const loadRoom = useCallback(
     async (roomId: string) => {
       try {
-        const response = await fetch(`/api/rooms/${roomId}`);
+        const response = await fetch(`/api/${roomId}/get`);
         if (response.ok) {
           const room = await response.json();
           dispatch(setCode(room.code));

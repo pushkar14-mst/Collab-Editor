@@ -11,11 +11,6 @@ import { useCollaboration } from "../hooks/useCollaboration";
 import { useWasmParser } from "../hooks/useWasmParser";
 import ErrorPanel from "./error-panel";
 
-/**
- * CodeEditor Component
- * Monaco Editor (VS Code) with Redux integration
- */
-
 export default function CodeEditor({ roomId }: { roomId?: string }) {
   const dispatch = useDispatch();
   const { sendCodeChange, sendCursorUpdate } = useCollaboration(

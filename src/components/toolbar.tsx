@@ -26,9 +26,14 @@ export default function Toolbar() {
     { value: "python", label: "Python" },
     { value: "java", label: "Java" },
     { value: "cpp", label: "C++" },
+    { value: "c", label: "C" },
+    { value: "go", label: "Go" },
+    { value: "rust", label: "Rust" },
+    { value: "php", label: "PHP" },
     { value: "html", label: "HTML" },
     { value: "css", label: "CSS" },
     { value: "json", label: "JSON" },
+    { value: "markdown", label: "Markdown" },
   ];
 
   function handleNameSubmit() {

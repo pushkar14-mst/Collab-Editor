@@ -1,6 +1,6 @@
 import { prisma } from "@/src/lib/prisma";
 import { withParams } from "@/src/lib/route-handler";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { z } from "zod";
 
 const schema = z.object({

@@ -20,6 +20,7 @@ export const GET = withParams(async (request, segment) => {
     });
 
     if (!room) {
+      console.log("here");
       return NextResponse.json({ error: "Room not found" }, { status: 404 });
     }
 

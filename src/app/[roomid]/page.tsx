@@ -13,7 +13,7 @@ export default async function RoomPage({
   return (
     <div className="flex h-screen bg-zinc-50 font-sans dark:bg-gray-950 flex-col">
       <Toolbar />
-      <main className="flex-1 w-full">
+      <main className="flex-1 w-full min-h-0">
         <CodeEditor roomId={roomid} />
       </main>
     </div>

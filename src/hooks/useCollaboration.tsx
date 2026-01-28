@@ -25,14 +25,20 @@ export function useCollaboration(roomIdFromUrl?: string) {
   const channelRef = useRef<RealtimeChannel | null>(null);
   const isLocalChange = useRef(false);
   const saveTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const hasLoadedRoom = useRef(false);
+
   const loadRoom = useCallback(
     async (roomId: string) => {
+      if (hasLoadedRoom.current) return;
       try {
         const response = await fetch(`/api/${roomId}/get`);
         if (response.ok) {
           const room = await response.json();
           dispatch(setCode(room.code));
           dispatch(setLanguage(room.language));
+          hasLoadedRoom.current = true;
+        } else {
+          console.log("room not found");
         }
       } catch (error) {
         console.error("Failed to load room:", error);
@@ -83,7 +89,9 @@ export function useCollaboration(roomIdFromUrl?: string) {
     // Set or generate roomId
     const currentRoomId = roomIdFromUrl || roomId;
     if (!currentRoomId) return;
-
+    if (!hasLoadedRoom.current) {
+      loadRoom(currentRoomId);
+    }
     if (currentRoomId !== roomId) {
       dispatch(setRoomId(currentRoomId));
       loadRoom(currentRoomId);
@@ -184,23 +192,27 @@ export function useCollaboration(roomIdFromUrl?: string) {
   };
 
   // Send cursor position to other users
-  const sendCursorUpdate = (line: number, column: number) => {
-    if (channelRef.current) {
-      // Generate consistent color for this user
-      const color = `hsl(${(userId.charCodeAt(0) * 137.5) % 360}, 70%, 60%)`;
+  const sendCursorUpdate = useCallback(
+    (line: number, column: number) => {
+      if (channelRef.current) {
+        const color = `hsl(${
+          ((userId?.charCodeAt(0) || 0) * 137.5) % 360
+        }, 70%, 60%)`;
 
-      channelRef.current.send({
-        type: "broadcast",
-        event: "cursor-move",
-        payload: {
-          userId,
-          userName,
-          position: { line, column },
-          color,
-        },
-      });
-    }
-  };
+        channelRef.current.send({
+          type: "broadcast",
+          event: "cursor-move",
+          payload: {
+            userId,
+            userName,
+            position: { line, column },
+            color,
+          },
+        });
+      }
+    },
+    [userId, userName]
+  );
   const createSnapshot = useCallback(() => {
     if (roomId && code && userId) {
       saveSnapshot(roomId, code, userId, userName);
